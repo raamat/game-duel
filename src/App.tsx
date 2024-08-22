@@ -1,11 +1,14 @@
 import React from 'react';
+import Game from './components/Game';
 
-function App() {
+const App: React.FC = () => {
   return (
     <div>
-      Canvas
+      <h1>Игра "Дуэль"</h1>
+      <Game />
     </div>
   );
-}
+};
 
 export default App;
+
