@@ -2,8 +2,10 @@ import React, { useState, useEffect, useRef } from "react";
 import Canvas from "./Canvas";
 import SettingsMenu from "./SettingsMenu";
 import Scoreboard from "./Scoreboard";
+import HeroSettings from "./HeroSettings";
 
 interface HeroProps {
+  heroIndex: number;
   x: number;
   y: number;
   heroColor: string;
@@ -19,6 +21,7 @@ const Game: React.FC = () => {
   const [hero2SpellColor, setHero2SpellColor] = useState("red");
 
   const [hero1, setHero1] = useState<HeroProps>({
+    heroIndex: 1,
     x: 100,
     y: 300,
     heroColor: "blue",
@@ -27,6 +30,7 @@ const Game: React.FC = () => {
     direction: 1,
   });
   const [hero2, setHero2] = useState<HeroProps>({
+    heroIndex: 2,
     x: 700,
     y: 300,
     heroColor: "red",
@@ -70,8 +74,6 @@ const Game: React.FC = () => {
     }
     setHero1((prev) => ({ ...prev, y: prev.y + prev.direction * 5 }));
 
-    //console.log(hero1.y)
-
     // Двигаем второго героя
     if (
       hero2.y + hero2.direction * 5 < 20 ||
@@ -82,8 +84,10 @@ const Game: React.FC = () => {
     setHero2((prev) => ({ ...prev, y: prev.y + prev.direction * 5 }));
   };
 
+  // Настроки заклинания
   const shootSpell = (hero: HeroProps) => {
     const newSpell = {
+      heroIndex: hero.heroIndex,
       x: hero.x,
       y: hero.y,
       color: hero.spellsColor,
@@ -98,8 +102,8 @@ const Game: React.FC = () => {
         .map((spell) => ({
           ...spell,
           x: spell.x + spell.direction * 5, // Движение заклинания
-          y: spell.direction === 1 ? hero1.y : hero2.y, // Привязываем положение по вертикали к герою
-          color: spell.direction === 1 ? hero1SpellColor : hero2SpellColor,
+          y: spell.heroIndex === 1 ? hero1.y : hero2.y, // Привязываем положение по вертикали к герою
+          color: spell.heroIndex === 1 ? hero1SpellColor : hero2SpellColor,
         }))
         .filter((spell) => spell.x < 800 && spell.x > 0); // Удаляем заклинания за пределами экрана
     });
@@ -141,8 +145,8 @@ const Game: React.FC = () => {
     }
   };
 
-  function setColorHero(col: string) {
-    setHero1((prev) => ({ ...prev, color: col }));
+  function setColorHero(color: string) {
+    setHero1((prev) => ({ ...prev, color: color }));
   }
 
   useEffect(() => {
@@ -169,20 +173,28 @@ const Game: React.FC = () => {
       shootSpell(hero2);
     }, hero2.rateOfFire);
 
+    console.log(hero1.rateOfFire);
+
     // Очистка интервала при размонтировании компонента
     return () => {
       clearInterval(shootInterval1);
       clearInterval(shootInterval2);
     };
-  }, []); // Пустой массив зависимостей, чтобы эффект выполнялся только один раз
+  }, [hero1.rateOfFire]);
+
+  // Изменение скорости полета заклинаний
+  const updateSpeedSpells = () => {
+    setHero1((prev) => ({ ...prev, rateOfFire: prev.rateOfFire - 100 }));
+  };
 
   return (
-    <div>
+    <>
       <Canvas draw={draw} onClick={handleMouseClick} />
       <Scoreboard score={score} />
       <SettingsMenu onColorChange={setHero1SpellColor} />
       <SettingsMenu onColorChange={setHero2SpellColor} />
-    </div>
+      <HeroSettings onUpdate={updateSpeedSpells} />
+    </>
   );
 };
 
