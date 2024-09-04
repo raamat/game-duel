@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 
 // Определяем тип для героя
 interface HeroSettings {
@@ -8,7 +8,7 @@ interface HeroSettings {
 }
 
 interface HeroSettingsProps {
-  onUpdate: () => void;
+  onUpdate: (heroes: HeroSettings[]) => void;
 }
 
 const HeroSettings: React.FC<HeroSettingsProps> = ({ onUpdate }) => {
@@ -18,7 +18,12 @@ const HeroSettings: React.FC<HeroSettingsProps> = ({ onUpdate }) => {
     { name: "Герой 2", shooting: 7, speed: 12 },
   ]);
 
-   // Функция для обновления настроек
+  // Эффект для вызова onUpdate при первом рендере и при изменении heroes
+  useEffect(() => {
+    onUpdate(heroes); // Передаем состояние героев в родительский компонент
+  }, [heroes]);
+
+  // Функция для обновления настроек
   const updateSetting = (
     index: number,
     type: "shooting" | "speed",
@@ -27,7 +32,7 @@ const HeroSettings: React.FC<HeroSettingsProps> = ({ onUpdate }) => {
     const newHeroes = [...heroes];
     newHeroes[index][type] = value;
     setHeroes(newHeroes);
-    onUpdate();
+    onUpdate(heroes);
   };
 
   return (
@@ -82,7 +87,7 @@ const styles = {
   },
   title: {
     color: "#6a0dad",
-    textAlign: 'center' as 'center',
+    textAlign: "center" as "center",
   },
   heroContainer: {
     display: "flex",
