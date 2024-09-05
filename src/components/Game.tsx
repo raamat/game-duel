@@ -18,6 +18,7 @@ interface HeroProps {
   spellsColor: string;
   rateOfFire: number;
   direction: number; // 1 - вверх, -1 - вниз
+  speedHero: number;
 }
 
 const hero1: HeroProps = {
@@ -26,8 +27,9 @@ const hero1: HeroProps = {
   y: 300,
   heroColor: "blue",
   spellsColor: "blue",
-  rateOfFire: 1500,
+  rateOfFire: 0,
   direction: 1, // 1 - вверх, -1 - вниз
+  speedHero: 0,
 };
 
 const hero2: HeroProps = {
@@ -36,8 +38,9 @@ const hero2: HeroProps = {
   y: 300,
   heroColor: "red",
   spellsColor: "red",
-  rateOfFire: 500,
+  rateOfFire: 0,
   direction: -1, // 1 - вверх, -1 - вниз
+  speedHero: 0,
 };
 
 const Game: React.FC = () => {
@@ -79,7 +82,7 @@ const Game: React.FC = () => {
     ) {
       hero1.direction = -hero1.direction;
     }
-    hero1.y = hero1.y + hero1.direction * 5;
+    hero1.y = hero1.y + hero1.direction * hero1.speedHero;
 
     // Двигаем второго героя
     if (
@@ -88,7 +91,7 @@ const Game: React.FC = () => {
     ) {
       hero2.direction = -hero2.direction;
     }
-    hero2.y = hero2.y + hero2.direction * 5;
+    hero2.y = hero2.y + hero2.direction * hero2.speedHero;
   };
 
   // Настроки заклинания
@@ -179,10 +182,12 @@ const Game: React.FC = () => {
     };
   }, [hero1.rateOfFire, hero2.rateOfFire]);
 
-  // Изменение скорости полета заклинаний
+  // Частота стрельбы и скорость передвижения
   const handleUpdateHeroes = (updatedHeroes: HeroSettingsForHandle[]) => {
     hero1.rateOfFire = 2000 - updatedHeroes[0].shooting * 180;
     hero2.rateOfFire = 2000 - updatedHeroes[1].shooting * 180;
+    hero1.speedHero = updatedHeroes[0].speed;
+    hero2.speedHero = updatedHeroes[1].speed;
   };
 
   return (
