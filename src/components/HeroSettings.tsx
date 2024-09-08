@@ -14,7 +14,7 @@ interface HeroSettingsProps {
 const HeroSettings: React.FC<HeroSettingsProps> = ({ onUpdate }) => {
   // Состояние для хранения настроек героев
   const [heroes, setHeroes] = useState<HeroSettings[]>([
-    { name: "Герой 1", shooting: 5, speed: 10 },
+    { name: "Герой 1", shooting: 5, speed: 1 },
     { name: "Герой 2", shooting: 7, speed: 12 },
   ]);
 
@@ -61,7 +61,7 @@ const HeroSettings: React.FC<HeroSettingsProps> = ({ onUpdate }) => {
               Скорость передвижения:
               <input
                 type="range"
-                min="1"
+                min="0"
                 max="20"
                 value={hero.speed}
                 onChange={(e) =>

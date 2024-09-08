@@ -1,17 +1,21 @@
 import React from "react";
 
-interface SettingsMenuProps {
+interface SpellColorSettingsProps {
   onColorChange: (color: string) => void;
+  heroIndex: number;
 }
 
-const SettingsMenu: React.FC<SettingsMenuProps> = ({ onColorChange }) => {
+const SpellColorSettings: React.FC<SpellColorSettingsProps> = ({
+  heroIndex,
+  onColorChange,
+}) => {
   const handleColorChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     onColorChange(e.target.value);
   };
 
   return (
     <div>
-      <h2>Настройки</h2>
+      <h2>Герой {heroIndex}</h2>
       <label>
         Цвет заклинаний:
         <input type="color" onChange={handleColorChange} />
@@ -20,4 +24,4 @@ const SettingsMenu: React.FC<SettingsMenuProps> = ({ onColorChange }) => {
   );
 };
 
-export default SettingsMenu;
+export default SpellColorSettings;

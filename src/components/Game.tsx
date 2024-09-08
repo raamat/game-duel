@@ -1,8 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
-import Canvas from "./Canvas";
-import SettingsMenu from "./SettingsMenu";
 import Scoreboard from "./Scoreboard";
 import HeroSettings from "./HeroSettings";
+import Modal from "./Modal";
 
 interface HeroSettingsForHandle {
   name: string;
@@ -19,6 +18,7 @@ interface HeroProps {
   rateOfFire: number;
   direction: number; // 1 - вверх, -1 - вниз
   speedHero: number;
+  heroSize: number;
 }
 
 const hero1: HeroProps = {
@@ -30,6 +30,7 @@ const hero1: HeroProps = {
   rateOfFire: 0,
   direction: 1, // 1 - вверх, -1 - вниз
   speedHero: 0,
+  heroSize: 20,
 };
 
 const hero2: HeroProps = {
@@ -41,6 +42,7 @@ const hero2: HeroProps = {
   rateOfFire: 0,
   direction: -1, // 1 - вверх, -1 - вниз
   speedHero: 0,
+  heroSize: 20,
 };
 
 const Game: React.FC = () => {
@@ -48,6 +50,12 @@ const Game: React.FC = () => {
   const [score, setScore] = useState(0);
   const [hero1SpellColor, setHero1SpellColor] = useState("blue");
   const [hero2SpellColor, setHero2SpellColor] = useState("red");
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isModelNumber, setIsModelNumber] = useState(true);
+
+  const toggleModal = () => {
+    setIsModalOpen((prev) => !prev);
+  };
 
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
@@ -57,12 +65,12 @@ const Game: React.FC = () => {
     // Рисуем героев
     ctx.fillStyle = hero1.heroColor;
     ctx.beginPath();
-    ctx.arc(hero1.x, hero1.y, 20, 0, Math.PI * 2);
+    ctx.arc(hero1.x, hero1.y, hero1.heroSize, 0, Math.PI * 2);
     ctx.fill();
 
     ctx.fillStyle = hero2.heroColor;
     ctx.beginPath();
-    ctx.arc(hero2.x, hero2.y, 20, 0, Math.PI * 2);
+    ctx.arc(hero2.x, hero2.y, hero2.heroSize, 0, Math.PI * 2);
     ctx.fill();
 
     // Рисуем заклинания
@@ -73,6 +81,15 @@ const Game: React.FC = () => {
       ctx.fill();
     });
   };
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    const ctx = canvas?.getContext("2d");
+
+    if (ctx) {
+      draw(ctx);
+    }
+  }, [draw]);
 
   const moveHeroes = () => {
     // Двигаем первого героя
@@ -190,12 +207,69 @@ const Game: React.FC = () => {
     hero2.speedHero = updatedHeroes[1].speed;
   };
 
+  // Обработчик клика по герою
+  const handleClickOnHero = (event: MouseEvent) => {
+    const canvas = canvasRef.current;
+    if (canvas) {
+      const rect = canvas.getBoundingClientRect();
+      const x = event.clientX - rect.left;
+      const y = event.clientY - rect.top;
+
+      // Проверяем, попадает ли клик в область героя
+      if (
+        x >= hero1.x &&
+        x <= hero1.x + hero1.heroSize &&
+        y >= hero1.y &&
+        y <= hero1.y + hero1.heroSize
+      ) {
+        toggleModal();
+      } else if (
+        x >= hero2.x &&
+        x <= hero2.x + hero2.heroSize &&
+        y >= hero2.y &&
+        y <= hero2.y + hero2.heroSize
+      ) {
+        setIsModelNumber(false);
+        toggleModal();
+      }
+    }
+  };
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    const ctx = canvas?.getContext("2d");
+
+    if (ctx) {
+      ctx.clearRect(0, 0, 20, 0); // Очищаем канвас
+      draw(ctx); // Рисуем героя
+    }
+
+    // Добавляем обработчик клика на канвас
+    canvas?.addEventListener("click", handleClickOnHero);
+
+    // Убираем обработчик при размонтировании компонента
+    return () => {
+      canvas?.removeEventListener("click", handleClickOnHero);
+    };
+  }, [hero1.spellsColor]); // Перерисовываем при изменении цвета
+
   return (
     <>
-      <Canvas draw={draw} onClick={handleMouseClick} />
+      <canvas
+        ref={canvasRef}
+        width={800}
+        height={600}
+        style={{ border: "1px solid black" }}
+      />
+      <Modal
+        isModalOpen={isModalOpen}
+        onModalToggle={toggleModal}
+        setHeroSpellColor={
+          isModelNumber ? setHero1SpellColor : setHero2SpellColor
+        }
+        heroIndex={isModelNumber ? 1 : 2}
+      />
       <Scoreboard score={score} />
-      <SettingsMenu onColorChange={setHero1SpellColor} />
-      <SettingsMenu onColorChange={setHero2SpellColor} />
       <HeroSettings onUpdate={handleUpdateHeroes} />
     </>
   );

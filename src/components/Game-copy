@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
-import Canvas from "./Canvas";
-import SettingsMenu from "./SettingsMenu";
+import Canvas from "./Canvas1";
+import SpellColorSettings from "./SpellColorSetings";
 import Scoreboard from "./Scoreboard";
 import HeroSettings from "./HeroSettings";
 
@@ -191,8 +191,8 @@ const Game: React.FC = () => {
     <>
       <Canvas draw={draw} onClick={handleMouseClick} />
       <Scoreboard score={score} />
-      <SettingsMenu onColorChange={setHero1SpellColor} />
-      <SettingsMenu onColorChange={setHero2SpellColor} />
+      <SpellColorSettings onColorChange={setHero1SpellColor} />
+      <SpellColorSettings onColorChange={setHero2SpellColor} />
       <HeroSettings onUpdate={updateSpeedSpells} />
     </>
   );
