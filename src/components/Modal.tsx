@@ -5,6 +5,7 @@ interface ModalProps {
   onModalToggle: () => void;
   setHeroSpellColor: any;
   heroIndex: number;
+  currentColor: string;
 }
 
 const Modal: React.FC<ModalProps> = ({
@@ -12,6 +13,7 @@ const Modal: React.FC<ModalProps> = ({
   onModalToggle,
   setHeroSpellColor,
   heroIndex,
+  currentColor
 }) => {
   return (
     <div style={styles.container}>
@@ -24,6 +26,7 @@ const Modal: React.FC<ModalProps> = ({
             <SpellColorSettings
               onColorChange={setHeroSpellColor}
               heroIndex={heroIndex}
+              currentColor={currentColor}
             />
           </div>
         </div>
@@ -46,7 +49,7 @@ const styles: { [key: string]: React.CSSProperties } = {
   },
   modalContent: {
     width: "300px",
-    height: "300px",
+    height: "200px",
     backgroundColor: "#e1bee7",
     padding: "20px",
     borderRadius: "5px",

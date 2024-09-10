@@ -21,7 +21,7 @@ interface HeroProps {
   heroColor: string;
   spellsColor: string;
   rateOfFire: number;
-  direction: number; // 1 - вверх, -1 - вниз
+  direction: number;
   speedHero: number;
   heroRadius: number;
 }
@@ -35,7 +35,7 @@ const hero1: HeroProps = {
   rateOfFire: 0,
   direction: 1, // 1 - вверх, -1 - вниз
   speedHero: 0,
-  heroRadius: 50,
+  heroRadius: 30,
 };
 
 const hero2: HeroProps = {
@@ -47,15 +47,15 @@ const hero2: HeroProps = {
   rateOfFire: 0,
   direction: -1, // 1 - вверх, -1 - вниз
   speedHero: 0,
-  heroRadius: 20,
+  heroRadius: 30,
 };
 
 const Game: React.FC = () => {
   const [spells, setSpells] = useState<any[]>([]);
   const [scoreHero1, setScoreHero1] = useState(0);
   const [scoreHero2, setScoreHero2] = useState(0);
-  const [hero1SpellColor, setHero1SpellColor] = useState("blue");
-  const [hero2SpellColor, setHero2SpellColor] = useState("red");
+  const [hero1SpellColor, setHero1SpellColor] = useState("#0000ff");
+  const [hero2SpellColor, setHero2SpellColor] = useState("#ff0000");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isModelNumber, setIsModelNumber] = useState(true);
 
@@ -147,7 +147,6 @@ const Game: React.FC = () => {
         .map((spell) => ({
           ...spell,
           x: spell.x + spell.direction * 5, // Движение заклинания
-          //y: spell.heroIndex === 1 ? hero1.y : hero2.y, // Привязываем положение по вертикали к герою
           color: spell.heroIndex === 1 ? hero1SpellColor : hero2SpellColor,
         }))
         .filter((spell) => spell.x < 800 && spell.x > 0); // Удаляем заклинания за пределами экрана
@@ -182,6 +181,7 @@ const Game: React.FC = () => {
     const rect = canvasRef.current?.getBoundingClientRect();
     const mouseX = event.clientX - (rect?.left || 0);
     const mouseY = event.clientY - (rect?.top || 0);
+    console.log("Hello")
 
     // Проверяем, попали ли в героя
     if (Math.sqrt((mouseX - hero1.x) ** 2 + (mouseY - hero1.y) ** 2) < 25) {
@@ -243,6 +243,7 @@ const Game: React.FC = () => {
         y >= hero1.y &&
         y <= hero1.y + hero1.heroRadius
       ) {
+        setIsModelNumber(true);
         toggleModal();
       } else if (
         x >= hero2.x &&
@@ -290,6 +291,7 @@ const Game: React.FC = () => {
           isModelNumber ? setHero1SpellColor : setHero2SpellColor
         }
         heroIndex={isModelNumber ? 1 : 2}
+        currentColor={isModelNumber ? hero1SpellColor : hero2SpellColor}
       />
       <HeroSettings onUpdate={handleUpdateHeroes} />
     </>
