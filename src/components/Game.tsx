@@ -3,6 +3,11 @@ import Scoreboard from "./Scoreboard";
 import HeroSettings from "./HeroSettings";
 import Modal from "./Modal";
 
+interface Canvas {
+  width: number;
+  height: number;
+}
+
 interface HeroSettingsForHandle {
   name: string;
   shooting: number;
@@ -18,7 +23,7 @@ interface HeroProps {
   rateOfFire: number;
   direction: number; // 1 - вверх, -1 - вниз
   speedHero: number;
-  heroSize: number;
+  heroRadius: number;
 }
 
 const hero1: HeroProps = {
@@ -30,7 +35,7 @@ const hero1: HeroProps = {
   rateOfFire: 0,
   direction: 1, // 1 - вверх, -1 - вниз
   speedHero: 0,
-  heroSize: 20,
+  heroRadius: 50,
 };
 
 const hero2: HeroProps = {
@@ -42,16 +47,22 @@ const hero2: HeroProps = {
   rateOfFire: 0,
   direction: -1, // 1 - вверх, -1 - вниз
   speedHero: 0,
-  heroSize: 20,
+  heroRadius: 20,
 };
 
 const Game: React.FC = () => {
   const [spells, setSpells] = useState<any[]>([]);
-  const [score, setScore] = useState(0);
+  const [scoreHero1, setScoreHero1] = useState(0);
+  const [scoreHero2, setScoreHero2] = useState(0);
   const [hero1SpellColor, setHero1SpellColor] = useState("blue");
   const [hero2SpellColor, setHero2SpellColor] = useState("red");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isModelNumber, setIsModelNumber] = useState(true);
+
+  const canvas: Canvas = {
+    width: 800,
+    height: 600,
+  };
 
   const toggleModal = () => {
     setIsModalOpen((prev) => !prev);
@@ -65,19 +76,26 @@ const Game: React.FC = () => {
     // Рисуем героев
     ctx.fillStyle = hero1.heroColor;
     ctx.beginPath();
-    ctx.arc(hero1.x, hero1.y, hero1.heroSize, 0, Math.PI * 2);
+    ctx.arc(hero1.x, hero1.y, hero1.heroRadius, 0, Math.PI * 2);
     ctx.fill();
 
     ctx.fillStyle = hero2.heroColor;
     ctx.beginPath();
-    ctx.arc(hero2.x, hero2.y, hero2.heroSize, 0, Math.PI * 2);
+    ctx.arc(hero2.x, hero2.y, hero2.heroRadius, 0, Math.PI * 2);
     ctx.fill();
 
     // Рисуем заклинания
     spells.forEach((spell) => {
       ctx.fillStyle = spell.color;
       ctx.beginPath();
-      ctx.arc(spell.x, spell.y, 5, 0, Math.PI * 2);
+      ctx.arc(
+        spell.x -
+          (spell.heroIndex === 1 ? -hero1.heroRadius : hero2.heroRadius),
+        spell.y,
+        5,
+        0,
+        Math.PI * 2
+      );
       ctx.fill();
     });
   };
@@ -94,8 +112,8 @@ const Game: React.FC = () => {
   const moveHeroes = () => {
     // Двигаем первого героя
     if (
-      hero1.y + hero1.direction * 5 < 20 ||
-      hero1.y + hero1.direction * 5 > 580
+      hero1.y + hero1.direction * 5 < hero1.heroRadius ||
+      hero1.y + hero1.direction * 5 > canvas.height - hero1.heroRadius
     ) {
       hero1.direction = -hero1.direction;
     }
@@ -103,8 +121,8 @@ const Game: React.FC = () => {
 
     // Двигаем второго героя
     if (
-      hero2.y + hero2.direction * 5 < 20 ||
-      hero2.y + hero2.direction * 5 > 580
+      hero2.y + hero2.direction * 5 < hero2.heroRadius ||
+      hero2.y + hero2.direction * 5 > canvas.height - hero2.heroRadius
     ) {
       hero2.direction = -hero2.direction;
     }
@@ -129,7 +147,7 @@ const Game: React.FC = () => {
         .map((spell) => ({
           ...spell,
           x: spell.x + spell.direction * 5, // Движение заклинания
-          y: spell.heroIndex === 1 ? hero1.y : hero2.y, // Привязываем положение по вертикали к герою
+          //y: spell.heroIndex === 1 ? hero1.y : hero2.y, // Привязываем положение по вертикали к герою
           color: spell.heroIndex === 1 ? hero1SpellColor : hero2SpellColor,
         }))
         .filter((spell) => spell.x < 800 && spell.x > 0); // Удаляем заклинания за пределами экрана
@@ -138,6 +156,7 @@ const Game: React.FC = () => {
 
   const checkCollisions = () => {
     spells.forEach((spell) => {
+      if (spell.used) return; // Проверяем, было ли заклинание уже использовано
       const distanceToHero1 = Math.sqrt(
         (spell.x - hero1.x) ** 2 + (spell.y - hero1.y) ** 2
       );
@@ -145,13 +164,15 @@ const Game: React.FC = () => {
         (spell.x - hero2.x) ** 2 + (spell.y - hero2.y) ** 2
       );
 
-      if (distanceToHero1 < 25) {
-        setScore((prev) => prev + 1);
+      if (distanceToHero1 < hero1.heroRadius && spell.heroIndex === 2) {
+        spell.used = true;
+        setScoreHero2((prev) => prev + 1);
         setSpells((prev) => prev.filter((s) => s !== spell)); // Удаляем заклинание
       }
 
-      if (distanceToHero2 < 25) {
-        setScore((prev) => prev + 1);
+      if (distanceToHero2 < hero2.heroRadius && spell.heroIndex === 1) {
+        spell.used = true;
+        setScoreHero1((prev) => prev + 1);
         setSpells((prev) => prev.filter((s) => s !== spell)); // Удаляем заклинание
       }
     });
@@ -218,16 +239,16 @@ const Game: React.FC = () => {
       // Проверяем, попадает ли клик в область героя
       if (
         x >= hero1.x &&
-        x <= hero1.x + hero1.heroSize &&
+        x <= hero1.x + hero1.heroRadius &&
         y >= hero1.y &&
-        y <= hero1.y + hero1.heroSize
+        y <= hero1.y + hero1.heroRadius
       ) {
         toggleModal();
       } else if (
         x >= hero2.x &&
-        x <= hero2.x + hero2.heroSize &&
+        x <= hero2.x + hero2.heroRadius &&
         y >= hero2.y &&
-        y <= hero2.y + hero2.heroSize
+        y <= hero2.y + hero2.heroRadius
       ) {
         setIsModelNumber(false);
         toggleModal();
@@ -255,11 +276,12 @@ const Game: React.FC = () => {
 
   return (
     <>
+      <Scoreboard scoreHero1={scoreHero1} scoreHero2={scoreHero2} />
       <canvas
         ref={canvasRef}
-        width={800}
-        height={600}
-        style={{ border: "1px solid black" }}
+        width={canvas.width}
+        height={canvas.height}
+        style={styles.canvas}
       />
       <Modal
         isModalOpen={isModalOpen}
@@ -269,10 +291,18 @@ const Game: React.FC = () => {
         }
         heroIndex={isModelNumber ? 1 : 2}
       />
-      <Scoreboard score={score} />
       <HeroSettings onUpdate={handleUpdateHeroes} />
     </>
   );
+};
+
+const styles = {
+  canvas: {
+    display: "block",
+    margin: "20px auto",
+    border: "3px solid #6a0dad",
+    backgroundColor: "#ffffff",
+  },
 };
 
 export default Game;
