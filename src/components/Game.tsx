@@ -3,7 +3,7 @@ import Scoreboard from "./Scoreboard";
 import HeroSettings from "./HeroSettings";
 import Modal from "./Modal";
 
-interface Canvas {
+interface CanvasSize {
   width: number;
   height: number;
 }
@@ -24,6 +24,7 @@ interface HeroProps {
   direction: number;
   speedHero: number;
   heroRadius: number;
+  spellsRadius: number;
 }
 
 const hero1: HeroProps = {
@@ -36,6 +37,7 @@ const hero1: HeroProps = {
   direction: 1, // 1 - вверх, -1 - вниз
   speedHero: 0,
   heroRadius: 30,
+  spellsRadius: 5,
 };
 
 const hero2: HeroProps = {
@@ -48,6 +50,7 @@ const hero2: HeroProps = {
   direction: -1, // 1 - вверх, -1 - вниз
   speedHero: 0,
   heroRadius: 30,
+  spellsRadius: 5,
 };
 
 const Game: React.FC = () => {
@@ -58,8 +61,11 @@ const Game: React.FC = () => {
   const [hero2SpellColor, setHero2SpellColor] = useState("#ff0000");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isModelNumber, setIsModelNumber] = useState(true);
+  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+  const [hero1Color, setHero1Color] = useState(hero1.heroColor);
+  const [hero2Color, setHero2Color] = useState(hero2.heroColor);
 
-  const canvas: Canvas = {
+  const canvasSize: CanvasSize = {
     width: 800,
     height: 600,
   };
@@ -74,12 +80,12 @@ const Game: React.FC = () => {
     ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
 
     // Рисуем героев
-    ctx.fillStyle = hero1.heroColor;
+    ctx.fillStyle = hero1Color;
     ctx.beginPath();
     ctx.arc(hero1.x, hero1.y, hero1.heroRadius, 0, Math.PI * 2);
     ctx.fill();
 
-    ctx.fillStyle = hero2.heroColor;
+    ctx.fillStyle = hero2Color;
     ctx.beginPath();
     ctx.arc(hero2.x, hero2.y, hero2.heroRadius, 0, Math.PI * 2);
     ctx.fill();
@@ -92,7 +98,7 @@ const Game: React.FC = () => {
         spell.x -
           (spell.heroIndex === 1 ? -hero1.heroRadius : hero2.heroRadius),
         spell.y,
-        5,
+        (spell.heroIndex === 1 ? hero1.spellsRadius : hero2.spellsRadius),
         0,
         Math.PI * 2
       );
@@ -100,36 +106,24 @@ const Game: React.FC = () => {
     });
   };
 
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    const ctx = canvas?.getContext("2d");
-
-    if (ctx) {
-      draw(ctx);
-    }
-  }, [draw]);
-
   const moveHeroes = () => {
-    // Двигаем первого героя
     if (
-      hero1.y + hero1.direction * 5 < hero1.heroRadius ||
-      hero1.y + hero1.direction * 5 > canvas.height - hero1.heroRadius
+      hero1.y + hero1.direction * hero1.spellsRadius < hero1.heroRadius ||
+      hero1.y + hero1.direction * hero1.spellsRadius > canvasSize.height - hero1.heroRadius
     ) {
       hero1.direction = -hero1.direction;
     }
     hero1.y = hero1.y + hero1.direction * hero1.speedHero;
 
-    // Двигаем второго героя
     if (
-      hero2.y + hero2.direction * 5 < hero2.heroRadius ||
-      hero2.y + hero2.direction * 5 > canvas.height - hero2.heroRadius
+      hero2.y + hero2.direction * hero2.spellsRadius < hero2.heroRadius ||
+      hero2.y + hero2.direction * hero2.spellsRadius > canvasSize.height - hero2.heroRadius
     ) {
       hero2.direction = -hero2.direction;
     }
     hero2.y = hero2.y + hero2.direction * hero2.speedHero;
   };
 
-  // Настроки заклинания
   const shootSpell = (hero: HeroProps) => {
     const newSpell = {
       heroIndex: hero.heroIndex,
@@ -149,7 +143,8 @@ const Game: React.FC = () => {
           x: spell.x + spell.direction * 5, // Движение заклинания
           color: spell.heroIndex === 1 ? hero1SpellColor : hero2SpellColor,
         }))
-        .filter((spell) => spell.x < 800 && spell.x > 0); // Удаляем заклинания за пределами экрана
+        .filter((spell) => !spell.used)
+        .filter((spell) => spell.x < canvasSize.width && spell.x > 0); // Удаляем заклинания за пределами экрана
     });
   };
 
@@ -165,33 +160,65 @@ const Game: React.FC = () => {
 
       if (distanceToHero1 < hero1.heroRadius && spell.heroIndex === 2) {
         spell.used = true;
+        setHero1Color("#00ff00");
         setScoreHero2((prev) => prev + 1);
         setSpells((prev) => prev.filter((s) => s !== spell)); // Удаляем заклинание
       }
 
       if (distanceToHero2 < hero2.heroRadius && spell.heroIndex === 1) {
         spell.used = true;
+        setHero2Color("#00ff00");
         setScoreHero1((prev) => prev + 1);
         setSpells((prev) => prev.filter((s) => s !== spell)); // Удаляем заклинание
       }
     });
   };
 
-  const handleMouseClick = (event: React.MouseEvent) => {
+  useEffect(() => {
+    if (hero1Color !== hero1.heroColor) {
+      const timer = setTimeout(() => {
+        setHero1Color(hero1.heroColor);
+      }, 500);
+      return () => clearTimeout(timer); 
+    }
+  }, [hero1Color]);
+
+  useEffect(() => {
+    if (hero2Color !== hero2.heroColor) {
+      const timer = setTimeout(() => {
+        setHero2Color(hero2.heroColor);
+      }, 500);
+      return () => clearTimeout(timer); 
+    }
+  }, [hero2Color]);
+
+  const handleMouseMove = (event: React.MouseEvent) => {
     const rect = canvasRef.current?.getBoundingClientRect();
-    const mouseX = event.clientX - (rect?.left || 0);
-    const mouseY = event.clientY - (rect?.top || 0);
-    console.log("Hello")
-
-    // Проверяем, попали ли в героя
-    if (Math.sqrt((mouseX - hero1.x) ** 2 + (mouseY - hero1.y) ** 2) < 25) {
-      shootSpell(hero1);
-    }
-
-    if (Math.sqrt((mouseX - hero2.x) ** 2 + (mouseY - hero2.y) ** 2) < 25) {
-      shootSpell(hero2);
-    }
+    const mouseX = event.clientX - (rect?.left ?? 0);
+    const mouseY = event.clientY - (rect?.top ?? 0);
+    setMousePosition({ x: mouseX, y: mouseY });
   };
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const distanceToHero1 = Math.sqrt(
+        (mousePosition.x - hero1.x) ** 2 + (mousePosition.y - hero1.y) ** 2
+      );
+      const distanceToHero2 = Math.sqrt(
+        (mousePosition.x - hero2.x) ** 2 + (mousePosition.y - hero2.y) ** 2
+      );
+
+      if (distanceToHero1 < hero1.heroRadius) {
+        hero1.direction = -hero1.direction;
+      }
+
+      if (distanceToHero2 < hero2.heroRadius) {
+        hero2.direction = -hero2.direction;
+      }
+    }, 100);
+
+    return () => clearInterval(interval);
+  }, [mousePosition]);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -204,7 +231,6 @@ const Game: React.FC = () => {
   }, [hero1, hero2, spells]);
 
   useEffect(() => {
-    // Постоянная стрельба
     const shootInterval1 = setInterval(() => {
       shootSpell(hero1);
     }, hero1.rateOfFire);
@@ -213,7 +239,6 @@ const Game: React.FC = () => {
       shootSpell(hero2);
     }, hero2.rateOfFire);
 
-    // Очистка интервала при размонтировании компонента
     return () => {
       clearInterval(shootInterval1);
       clearInterval(shootInterval2);
@@ -228,7 +253,6 @@ const Game: React.FC = () => {
     hero2.speedHero = updatedHeroes[1].speed;
   };
 
-  // Обработчик клика по герою
   const handleClickOnHero = (event: MouseEvent) => {
     const canvas = canvasRef.current;
     if (canvas) {
@@ -236,7 +260,6 @@ const Game: React.FC = () => {
       const x = event.clientX - rect.left;
       const y = event.clientY - rect.top;
 
-      // Проверяем, попадает ли клик в область героя
       if (
         x >= hero1.x &&
         x <= hero1.x + hero1.heroRadius &&
@@ -260,29 +283,28 @@ const Game: React.FC = () => {
   useEffect(() => {
     const canvas = canvasRef.current;
     const ctx = canvas?.getContext("2d");
-
     if (ctx) {
-      ctx.clearRect(0, 0, 20, 0); // Очищаем канвас
-      draw(ctx); // Рисуем героя
+      ctx.clearRect(0, 0, canvasSize.width, canvasSize.height);
+      draw(ctx);
     }
 
-    // Добавляем обработчик клика на канвас
     canvas?.addEventListener("click", handleClickOnHero);
 
-    // Убираем обработчик при размонтировании компонента
     return () => {
       canvas?.removeEventListener("click", handleClickOnHero);
     };
-  }, [hero1.spellsColor]); // Перерисовываем при изменении цвета
+
+  }, [hero1.spellsColor, hero2.spellsColor, spells]); // Перерисовываем при изменении цвета
 
   return (
     <>
       <Scoreboard scoreHero1={scoreHero1} scoreHero2={scoreHero2} />
       <canvas
         ref={canvasRef}
-        width={canvas.width}
-        height={canvas.height}
+        width={canvasSize.width}
+        height={canvasSize.height}
         style={styles.canvas}
+        onMouseMove={handleMouseMove}
       />
       <Modal
         isModalOpen={isModalOpen}

@@ -1,46 +1,33 @@
-# Getting Started with Create React App
+# Игра "Дуэль" на чистом канвасе и реакте
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+## ТЗ (ООО Белая Доска)
+Реализуйте игру "Дуэль"
 
-## Available Scripts
+- Есть прямоугольное поле Canvas, на прямоугольном поле расположены фигуры — два круга. Круги представляют собой героев, которые сражаются друг с другом. 
+- Герои двигаются по прямой вверх и вниз на противоположных сторонах экрана (как биты в арканоиде). По достижении края поля герой отталкивается и меняет направление движения. 
+- Герои пользуются заклинаниями — стреляют друг в друга шариками поменьше. 
+- Если герой встречает на своем пути курсор мыши, то он отталкивается от него как от границы поля
+- При соприкосновении с врагом, заклинание исчезает, а на табло засчитывается одно попадание. 
+- Поле прямоугольное, выйти за границы нельзя
+- Если на героя кликнуть, то появляется менюшка, выполненная с помощью React, с помощью которой можно поменять цвет заклинаний, которые он кидает
 
-In the project directory, you can run:
+Для каждого героя есть два ползунка, которые настраивают частоту его стрельбы и скорость передвижения.
 
-### `npm start`
+Реализация должна быть выполнена на чистом канвасе и реакте, без использования сторонних графических или игровых библиотек.
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+## Вкалывают роботы, а не человек...
+В описании к вакансии был упомянут навык работы с ChatGpt. Поскольку я ранее не работал с канвасом и TypeScript, то решил максимально плотно поэксплуатировать указанный чат-бот (GPT-3.5). Изрядно попрактиковался в написании промптов, чтобы в итоге получить работающее приложение. 
 
-The page will reload if you make edits.\
-You will also see any lint errors in the console.
+На мой взгляд, опыт был полезен, так как пришлось просматривать и вникать в чужой код, разбираться, почему те или иные функции не работают, или работают не так, как надо.
 
-### `npm test`
+Конечный результат оценил знающий человек, который дипломатично озвучил, что код получился так себе. Есть над чем поработать.
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
-
-### `npm run build`
-
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
-
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
-
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
-
-### `npm run eject`
-
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
-
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
-
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
-
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
+## Запускаем то, что есть
+Тут всё стандартно:
+```
+git clone https://github.com/raamat/game-duel.git
+npm install
+npm start
+```
+## Демо
+https://raamat.pw/game-duel
